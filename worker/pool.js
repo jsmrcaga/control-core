@@ -366,4 +366,4 @@ class WorkerPool extends SimpleEventEmitter {
 	}
 }
 
-module.exports = { WorkerPool, PooledWorker, Task };
+module.exports = { WorkerPool, PooledWorker, Task, TASK_STATES };
