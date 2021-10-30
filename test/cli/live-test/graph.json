@@ -1,0 +1,73 @@
+[{
+	"name": "Graph 1",
+	"group": "G1",
+	"nodes": [{
+		"id": 1,
+		"type": "wait",
+		"config": {
+			"wait_time": 1
+		}
+	},{
+		"id": 2,
+		"type": "console",
+		"config": {
+			"log": "\t\tHELLO FROM NODE 2"
+		}
+	},{
+		"id": 3,
+		"type": "runnable"
+	},{
+		"id": "F",
+		"type": "console",
+		"config": {
+			"log": "\t\tFINISH GRAPH ONE"
+		}
+	}],
+	"edges": [
+		{ "from": 1, "to": 2 },
+		{ "from": 2, "to": "F" },
+		{ "from": 1, "to": 3 }
+	]
+}, {
+	"name": "Graph X",
+	"group": "G2",
+	"nodes": [{
+		"id": 1,
+		"type": "runnable"
+	},{
+		"id": 2,
+		"type": "console",
+		"config": {
+			"log": "\t\tHELLO FROM NODE 2 - GRAPH X"
+		}
+	},{
+		"id": 3,
+		"type": "runnable"
+	},{
+		"id": "X",
+		"type": "console",
+		"config": {
+			"log": "\t\tFINISH GRAPH X"
+		}
+	}],
+	"edges": [
+		{ "from": 1, "to": 2 },
+		{ "from": 2, "to": 3 },
+		{ "from": 3, "to": "X" }
+	]
+}, {
+	"name": "Error Graph",
+	"nodes": [{
+		"id": 1,
+		"type": "runnable"
+	},{
+		"id": 2,
+		"type": "generic-error",
+		"config": {
+			"error_message": "This is an error"
+		}
+	}],
+	"edges": [
+		{ "from": 1, "to": 2 }
+	]
+}]
