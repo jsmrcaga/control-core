@@ -26,6 +26,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Debug npm
+        run: npm stars
+
   publish:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' }}
