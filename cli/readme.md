@@ -29,6 +29,7 @@ Options:
     -t, --threads	Maximum number of threads
     -r, --respawn	If dead threads should automatically respawn
     -i, --idle		Maximum time a thread can be idle before killing it (incompatible with respawn)
+    -k, --fast-fail Kill process (exit 1) if a worker error happens
     --verbose		Verbose logging
     --renderer		Path to a custom renderer
 ```
