@@ -1,6 +1,7 @@
 [{
 	"name": "Graph 1",
 	"group": "G1",
+	"id": 1,
 	"nodes": [{
 		"id": 1,
 		"type": "wait",
@@ -30,6 +31,7 @@
 	]
 }, {
 	"name": "Graph X",
+	"id": "X",
 	"group": "G2",
 	"nodes": [{
 		"id": 1,
@@ -57,6 +59,7 @@
 	]
 }, {
 	"name": "Error Graph",
+	"id": "error-graph",
 	"nodes": [{
 		"id": 1,
 		"type": "runnable"
@@ -64,10 +67,22 @@
 		"id": 2,
 		"type": "generic-error",
 		"config": {
-			"error_message": "This is an error"
+			"error_message": "This is an error",
+			"should_throw": true
 		}
 	}],
 	"edges": [
 		{ "from": 1, "to": 2 }
 	]
+}, {
+	"name": "Errors depending on initial inputs",
+	"id": "error-input",
+	"nodes": [{
+		"id": 1,
+		"type": "generic-error"
+	}],
+	"edges": [],
+	"inputs": {
+		"error": "Custom error from initial inputs"
+	}
 }]
