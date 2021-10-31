@@ -10,6 +10,8 @@ to automate simple tasks.
 It was initally written (for fun and) to perform browser testing using a simple flow-based editor, but it was
 written to be able to run almost anything.
 
+![CLI demo GIF](./docs/test-demo.gif)
+
 # Core
 
 This is the core package of Control. It provides all necessary features
