@@ -144,6 +144,7 @@ class ControlCLI {
 			this.time_start = process.hrtime.bigint();
 			this.cold_end = process.hrtime.bigint();
 
+			// Every graph is a task
 			for(const graph_config of graphs) {
 				// Add task to worker_pool
 				const { id: task_id } = this.worker_pool.run({ graph_config });

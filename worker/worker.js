@@ -74,12 +74,12 @@ class GraphWorker extends StateMachine {
 		this.control = new Control();
 
 		// On main thread parent port is null
-		parentPort?.on('message', ({ task_id, payload: { graph_config=null }}={}) => {
+		parentPort?.on('message', ({ task_id, payload: { graph_config=null, inputs=null }}={}) => {
 			if(!graph_config) {
 				throw new Error('Graph configuration is null');
 			}
 
-			this.task_queue.push({ graph_config, task_id });
+			this.task_queue.push({ graph_config, task_id, inputs });
 
 			// Runs if tasks on queue
 			this.pop();
@@ -106,10 +106,14 @@ class GraphWorker extends StateMachine {
 
 		const queued_task = this.task_queue.shift();
 		if(queued_task) {
-			const { graph_config, task_id } = queued_task;
+			const { graph_config, task_id, inputs } = queued_task;
 			this.run({
 				graph_config,
-				task_id
+				task_id,
+				// Custom runtime inputs
+				// or config inputs
+				// or no inputs
+				inputs: inputs || graph_config.inputs || null
 			});
 		}
 	}
@@ -126,7 +130,7 @@ class GraphWorker extends StateMachine {
 		this.emit(type, data);
 	}
 
-	run({ graph_config, task_id }={}) {
+	run({ graph_config, inputs=null, task_id }={}) {
 		this.to(STATES.BUSY);
 
 		if(!graph_config) {
@@ -138,7 +142,7 @@ class GraphWorker extends StateMachine {
 
 		this.#message(TASK_STATES.START, {
 			task_id,
-		})
+		});
 
 		const { graph } = this.control.from_config(graph_config);
 
@@ -154,7 +158,7 @@ class GraphWorker extends StateMachine {
 			});
 		});
 
-		return graph.run().then(({ final_outputs, final_nodes, output_stack }) => {
+		return graph.run({ inputs }).then(({ final_outputs, final_nodes, output_stack }) => {
 			this.#message(TASK_STATES.DONE, {
 				task_id,
 				final_outputs,
