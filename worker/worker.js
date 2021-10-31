@@ -36,13 +36,21 @@ class Message {
 		}
 
 		this.type = type;
-		for(const [k, v] of Object.entries(rest)) {
-			this[k] = v;
-		}
+		this.data = rest;
+	}
+
+	serialize() {
+		const { type, data } = this;
+		return {
+			type,
+			...data
+		};
 	}
 }
 
 class GraphWorker extends StateMachine {
+	static STATES = STATES;
+
 	static TRANSITIONS = {
 		[STATES.INIT]: [
 			STATES.READY
@@ -108,10 +116,14 @@ class GraphWorker extends StateMachine {
 
 	#message(type, data={}) {
 		// on main thread parent port is null
-		return parentPort?.postMessage({
+		return parentPort?.postMessage(new Message({
 			...data,
 			type
-		});
+		}).serialize());
+
+		// In case someone uses the worker directly,
+		// we can just emit the message instead
+		this.emit(type, data);
 	}
 
 	run({ graph_config, task_id }={}) {
@@ -165,3 +177,9 @@ class GraphWorker extends StateMachine {
 
 const worker = new GraphWorker();
 worker.init({ nodes_dir, plugins });
+
+module.exports = {
+	GraphWorker,
+	Message,
+	MESSAGE_TYPES
+};
