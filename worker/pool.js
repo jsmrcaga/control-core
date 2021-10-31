@@ -128,6 +128,8 @@ class PooledWorker extends StateMachine {
 			}
 
 			if(type === TASK_STATES.ERROR) {
+				// Task finished, go to idle
+				this.to(STATES.IDLE);
 				return this.emit('task_error', {
 					task_id,
 					worker_id: this.id,
@@ -280,6 +282,7 @@ class WorkerPool extends SimpleEventEmitter {
 			// Run next queued task if any
 			this.emit('task_error', event)
 			// Task errored we can pop a new one
+			console.log('poping new task after error');
 			this.#pop(pw);
 		});
 
