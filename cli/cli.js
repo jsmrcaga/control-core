@@ -21,6 +21,7 @@ let { options, variables } = argumentate(process.argv.slice(2), {
 	i: 'idle', // max time (in ms) before killing idle threads (incompatible with respawn)
 	p: 'plugins', // require Control Node plugins
 	k: 'fast-fail', // kill on worker error
+	x: 'title',  // show title (propagated to renderer)
 	verbose: 'verbose', // should log verbose,
 	renderer: 'renderer' // change from default renderer
 });
@@ -74,12 +75,18 @@ options = {
 	...options
 };
 
+// Get graphs and transform into array
 let graphs = require(path.join(process.cwd(), options.graphs));
-const nodes_dir = options.nodes ? path.join(process.cwd(), options.nodes) : [];
-
 if(!Array.isArray(graphs)) {
 	graphs = [graphs];
 }
+
+// Check if nodes is an array, otherwise transform it
+if(options.nodes && !Array.isArray(options.nodes)) {
+	options.nodes = [options.nodes];
+}
+
+const nodes_dir = options.nodes ? options.nodes.map(dir => path.join(process.cwd(), dir)) : [];
 
 const Renderer = require(options.renderer);
 
