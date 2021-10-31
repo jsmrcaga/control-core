@@ -28,6 +28,17 @@ class Renderer {
 			output: process.stdout,
 			terminal: true
 		});
+
+		if(this.options.title) {
+			this.log(`
+  _____          __           __
+ / ___/__  ___  / /________  / /
+/ /__/ _ \\/ _ \\/ __/ __/ _ \\/ /
+\\___/\\___/_//_/\\__/_/  \\___/_/
+
+-------------------------------
+			`);
+		}
 	}
 
 	draw_groups() {
