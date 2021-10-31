@@ -86,7 +86,8 @@ describe('Control', () => {
 						type: 'chicken',
 						id: 43,
 						config: { test: 45 }
-					}]
+					}],
+					edges: []
 				});
 			}).to.throw(TypeError, 'Unknown node type');
 		});

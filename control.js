@@ -44,6 +44,10 @@ class Control {
 			throw new Error('Cannot build graph without nodes');
 		}
 
+		if(!edges) {
+			throw new Error('Cannot build graph without edges');
+		}
+
 		// ex: node: { id, config, type, ...rest }
 		// ex: edge: { from, to, label }
 		const instanciated_nodes = nodes.map(node => {
