@@ -1,7 +1,7 @@
 {
   "name": "control-core",
   "version": "0.0.0",
-  "description": "",
+  "description": "A flow based automation tool",
   "main": "index.js",
   "scripts": {
     "test": "mocha test --recursive --exit"
@@ -22,9 +22,5 @@
   "dependencies": {
     "argumentate": "^2.0.0",
     "chalk": "^4.1.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": "https://github.com/jsmrcaga/control-core/actions"
+  }
 }
