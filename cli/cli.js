@@ -121,8 +121,9 @@ class ControlCLI {
 		// Get plugins
 		const { plugins=[] } = options;
 
+		const worker_path = path.join(__dirname, '../worker/worker');
 		this.cold_start = process.hrtime.bigint();
-		this.worker_pool.init('./worker/worker', { nodes_dir, plugins }).then(() => {
+		this.worker_pool.init(worker_path, { nodes_dir, plugins }).then(() => {
 			// workers initiated
 			this.time_start = process.hrtime.bigint();
 			this.cold_end = process.hrtime.bigint();
