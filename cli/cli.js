@@ -61,20 +61,14 @@ const Renderer = require(options.renderer);
 if(options.output) {
 	console.log('INFO: Output file is not yet supported\n');
 }
-// Config file can be an array or an object
-// We will transform the oject to an array to simplify handling
-
-// Node directory will be passed to every graph
-// TODO: find a way to cache NodeDiscovery to prevent
-// every worker from reading the files at the same time...
-
-let graphs = require(path.join(process.cwd(), options.graphs));
-const nodes_dir = options.nodes ? path.join(process.cwd(), options.nodes) : [];
 
 // Read config from file
 const required_config = config_reader({ filename: options.config });
 // CLI options have higher priority
 options = {...required_config, ...options};
+
+let graphs = require(path.join(process.cwd(), options.graphs));
+const nodes_dir = options.nodes ? path.join(process.cwd(), options.nodes) : [];
 
 if(!Array.isArray(graphs)) {
 	graphs = [graphs];
