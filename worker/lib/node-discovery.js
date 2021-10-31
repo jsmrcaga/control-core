@@ -73,6 +73,7 @@ class NodeDiscovery {
 	}
 
 	static discover({ directories=[], plugins=[] }) {
+		// Cast into arrays if needed
 		directories = arr(directories);
 		plugins = arr(plugins);
 
