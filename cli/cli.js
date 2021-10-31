@@ -20,6 +20,7 @@ let { options, variables } = argumentate(process.argv.slice(2), {
 	r: 'respawn', // auto respawn dead threads
 	i: 'idle', // max time (in ms) before killing idle threads (incompatible with respawn)
 	p: 'plugins', // require Control Node plugins
+	k: 'fast-fail', // kill on worker error
 	verbose: 'verbose', // should log verbose,
 	renderer: 'renderer' // change from default renderer
 });
@@ -45,6 +46,7 @@ Options:
     -t, --threads	Maximum number of threads
     -r, --respawn	If dead threads should automatically respawn
     -i, --idle		Maximum time a thread can be idle before killing it (incompatible with respawn)
+    -k, --fast-fail	Kill process (exit 1) if a worker error happens
     --verbose		Verbose logging
     --renderer		Path to a custom renderer
 	`);
@@ -52,20 +54,25 @@ Options:
 	return;
 }
 
-if(!options.renderer) {
-	options.renderer = './renderer';
-}
-
-const Renderer = require(options.renderer);
-
 if(options.output) {
 	console.log('INFO: Output file is not yet supported\n');
 }
 
 // Read config from file
 const required_config = config_reader({ filename: options.config });
+
+// We set default options and merge CLI with config file
 // CLI options have higher priority
-options = {...required_config, ...options};
+const default_options = {
+	'renderer': './renderer',
+	'fast-fail':  true
+};
+
+options = {
+	...default_options,
+	...required_config,
+	...options
+};
 
 let graphs = require(path.join(process.cwd(), options.graphs));
 const nodes_dir = options.nodes ? path.join(process.cwd(), options.nodes) : [];
@@ -73,6 +80,8 @@ const nodes_dir = options.nodes ? path.join(process.cwd(), options.nodes) : [];
 if(!Array.isArray(graphs)) {
 	graphs = [graphs];
 }
+
+const Renderer = require(options.renderer);
 
 class ControlCLI {
 	constructor() {
@@ -119,7 +128,7 @@ class ControlCLI {
 
 	init() {
 		// Get plugins
-		const { plugins=[] } = options;
+		const { plugins=[], } = options;
 
 		const worker_path = path.join(__dirname, '../worker/worker');
 		this.cold_start = process.hrtime.bigint();
@@ -157,6 +166,9 @@ class ControlCLI {
 
 			this.worker_pool.on('worker_error', ({ error, worker_id }) => {
 				console.error(red('WORKER ERROR'), worker_id, '\n', error);
+				if(options['fast-fail']) {
+					process.exit(1);
+				}
 			});
 
 			// Launch renderer

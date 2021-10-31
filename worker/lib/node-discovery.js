@@ -3,7 +3,7 @@ const path = require('path');
 
 const { Node } = require('../../lib/nodes/node');
 
-const { ScriptNode, AssertionNode, ErrorNode } = require('../../lib/nodes/generic');
+const { ScriptNode, AssertionNode, ErrorNode, NoopNode } = require('../../lib/nodes/generic');
 
 const arr = el => Array.isArray(el) ? el : [el];
 
@@ -77,7 +77,7 @@ class NodeDiscovery {
 		plugins = arr(plugins);
 
 		// Standard nodes
-		const std = [ScriptNode, AssertionNode, ErrorNode];
+		const std = [ScriptNode, AssertionNode, ErrorNode, NoopNode];
 
 		if(!directories?.length && !plugins?.length) {
 			return Promise.resolve([]);
