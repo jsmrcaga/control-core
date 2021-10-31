@@ -166,15 +166,19 @@ class GraphWorker extends StateMachine {
 				output_stack,
 				graph_id: graph.name
 			});
-
-			this.to(STATES.READY);
-			this.pop();
 		}).catch(e => {
 			this.#message(TASK_STATES.ERROR, {
 				task_id,
 				graph_config: graph.name,
 				error: e
-			})
+			});
+		}).finally(() => {
+			// If more tasks are waiting
+			// we can continue treating them
+			// independently on the result of
+			// the previous task
+			this.to(STATES.READY);
+			this.pop();
 		});
 	}
 }

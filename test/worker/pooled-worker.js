@@ -191,6 +191,8 @@ describe('Pooled Worker', () => {
 		// We need to simulate worker going online if
 		// we want other transitions to be possible
 		worker.emit('online');
+		// We can't transition to IDLE if worker is IDLE already
+		pw.reset(PooledWorker.WORKER_STATES.BUSY);
 
 		worker.emit('message', {
 			type: TASK_STATES.ERROR,

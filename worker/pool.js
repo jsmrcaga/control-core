@@ -128,6 +128,8 @@ class PooledWorker extends StateMachine {
 			}
 
 			if(type === TASK_STATES.ERROR) {
+				// Task finished, go to idle
+				this.to(STATES.IDLE);
 				return this.emit('task_error', {
 					task_id,
 					worker_id: this.id,
