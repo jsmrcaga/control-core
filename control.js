@@ -36,9 +36,13 @@ class Control {
 		this.graph = null;
 	}
 
-	from_config({ name, nodes, edges }) {
+	from_config({ id, name, nodes, edges }) {
 		// Reset graph
 		this.reset();
+
+		if(!id) {
+			throw new Error('Graph id is mandatory');
+		}
 
 		if(!nodes || !nodes.length) {
 			throw new Error('Cannot build graph without nodes');
@@ -62,6 +66,7 @@ class Control {
 		const instanciated_edges = edges.map(edge => new Edge({...edge}));
 
 		const graph = Graph.build({
+			id,
 			name,
 			nodes: instanciated_nodes,
 			edges: instanciated_edges

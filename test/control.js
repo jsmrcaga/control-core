@@ -81,6 +81,7 @@ describe('Control', () => {
 			TestControl.register(TestNode, TestNode2, TestNode3);
 			expect(() => {
 				TestControl.from_config({
+					id: 51,
 					name: 'MyGraph',
 					nodes: [{
 						type: 'chicken',
@@ -99,6 +100,7 @@ describe('Control', () => {
 			// 1 -> 2 -> F
 			//  \ -> 3 -> 4 -> 5 -> X
 			const { graph } = TestControl.from_config({
+				id: 3,
 				name: 'MyGraph',
 				nodes: [
 					{
@@ -155,6 +157,7 @@ describe('Control', () => {
 			// 1 -> 2
 			//  \ -> 3
 			TestControl.from_config({
+				id: 67,
 				name: 'MyGraph',
 				nodes: [
 					{

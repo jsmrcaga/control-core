@@ -152,7 +152,8 @@ class GraphWorker extends StateMachine {
 			this.#message(MESSAGE_TYPES.NODE_STATE_CHANGED, {
 				task_id,
 				node_id: node.id,
-				graph_id: graph.name,
+				graph_id: graph.id,
+				graph_name: graph.name,
 				from: from.toString(),
 				to: to.toString()
 			});
@@ -164,12 +165,14 @@ class GraphWorker extends StateMachine {
 				final_outputs,
 				final_nodes,
 				output_stack,
-				graph_id: graph.name
+				graph_id: graph.id,
+				graph_name: graph.name
 			});
 		}).catch(e => {
 			this.#message(TASK_STATES.ERROR, {
 				task_id,
-				graph_config: graph.name,
+				graph_id: graph.id,
+				graph_name: graph.name,
 				error: e
 			});
 		}).finally(() => {
