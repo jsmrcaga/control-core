@@ -81,7 +81,7 @@ class NodeDiscovery {
 		const std = [ScriptNode, AssertionNode, ErrorNode, NoopNode];
 
 		if(!directories?.length && !plugins?.length) {
-			return Promise.resolve([]);
+			return Promise.resolve(std);
 		}
 
 		const plugin_nodes = this.#read_plugins(plugins);
