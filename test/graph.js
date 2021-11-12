@@ -23,6 +23,20 @@ class RunnableNode extends Node {
 	}
 }
 
+const wait = () => {
+	return new Promise(resolve => {
+		setTimeout(() => resolve(), 100);
+	});
+};
+
+const mocks = [
+	// node3 - node4
+	[() => {}, () => {}],
+	[wait, wait],
+	[() => {}, wait],
+	[wait, () => {}],
+];
+
 describe('Graph', () => {
 	describe('Build', () => {
 		it('Builds a straight graph from nodes', () => {
@@ -319,5 +333,74 @@ describe('Graph', () => {
 				done(e);
 			});
 		});
+
+		for(const mock of mocks) {
+			const [n3, n4] = mock;
+			it('Allows nodes to run twice if previous nodes connect to it', done => {
+				const node1 = new RunnableNode({ id: 1, config: { ret: 'Node 1' }});
+				const node2 = new RunnableNode({ id: 2, config: { ret: 'Node 2' }});
+				const node3 = new RunnableNode({ id: 3, config: { ret: 'Node 3' }});
+				const node4 = new RunnableNode({ id: 4, config: { ret: 'Node 4' }});
+				const node5 = new RunnableNode({ id: 5, config: { ret: 'Node 5' }});
+
+				// 1 -> 2 -> 4 -> 5
+				//  \-> 3 ->/
+				const stub_1 = Sinon.stub(node1, 'run');
+				stub_1.callsFake(() => {});
+
+				const stub_2 = Sinon.stub(node2, 'run');
+				stub_2.callsFake(() => {});
+
+				const stub_3 = Sinon.stub(node3, 'run');
+				stub_3.callsFake(n3);
+
+				const stub_4 = Sinon.stub(node4, 'run');
+				stub_4.callsFake(n4);
+
+				const stub_5 = Sinon.stub(node5, 'run');
+				stub_5.callsFake(() => {});
+
+				const graph = Graph.build({
+					nodes: [node1, node2, node3, node4, node5],
+					edges: [{
+						from: 1,
+						to: 2
+					}, {
+						from: 1,
+						to: 3
+					}, {
+						from: 2,
+						to: 4
+					}, {
+						from: 3,
+						to: 4
+					}, {
+						from: 4,
+						to: 5
+					}]
+				});
+
+				graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
+					expect(node1.runs).to.be.eql(1);
+					expect(node2.runs).to.be.eql(1);
+					expect(node3.runs).to.be.eql(1);
+					expect(node4.runs).to.be.eql(2);
+					expect(node5.runs).to.be.eql(2);
+
+					for(const node of [node4, node5]) {
+						expect(Array.isArray(output_stack[node.id])).to.be.true;
+						expect(output_stack[node.id].length).to.be.eql(2);
+					}
+
+					// test event listeners
+					for(const node of [node1, node2, node3, node4, node5]) {
+						expect(node.getEventListeners('state_changed').size).to.be.eql(1);
+					}
+					done();
+				}).catch(e => {
+					done(e);
+				});
+			});
+		}
 	});
 });
