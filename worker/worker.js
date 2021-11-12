@@ -140,11 +140,12 @@ class GraphWorker extends StateMachine {
 		// Reset last run
 		this.control.reset();
 
+		const { graph } = this.control.from_config(graph_config);
+
 		this.#message(TASK_STATES.START, {
 			task_id,
+			graph_id: graph.id
 		});
-
-		const { graph } = this.control.from_config(graph_config);
 
 		// Every time a node changes state we warn our parent to
 		// handle user UI / visualization
