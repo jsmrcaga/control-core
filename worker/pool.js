@@ -52,7 +52,7 @@ class PooledWorker extends StateMachine {
 		return this.#worker.threadId;
 	}
 
-	constructor({ filename=null, max_idle_time=null }={}) {
+	constructor({ filename=null, max_idle_time=null, stdout=true, stdin=true }={}) {
 		super({
 			initial_state: STATES.STARTING
 		});
@@ -64,6 +64,9 @@ class PooledWorker extends StateMachine {
 		this.filename = filename;
 
 		this.max_idle_time = max_idle_time;
+
+		this.stdout = stdout;
+		this.stdin = stdin;
 
 		// Manage max idle timing
 		if(this.max_idle_time) {
@@ -85,8 +88,8 @@ class PooledWorker extends StateMachine {
 	init(workerData) {
 		const worker = new Worker(this.filename, {
 			workerData,
-			stdout: true,
-			stderr: true
+			stdout: this.stdout,
+			stderr: this.stdin,
 		});
 
 		this.#worker = worker;
@@ -115,7 +118,8 @@ class PooledWorker extends StateMachine {
 				this.to(STATES.IDLE);
 				return this.emit('task_done', {
 					task_id,
-					worker_id: this.id
+					worker_id: this.id,
+					...rest
 				});
 			}
 
@@ -123,7 +127,8 @@ class PooledWorker extends StateMachine {
 				this.to(STATES.BUSY);
 				return this.emit('task_start', {
 					task_id,
-					worker_id: this.id
+					worker_id: this.id,
+					...rest
 				});
 			}
 
@@ -133,7 +138,7 @@ class PooledWorker extends StateMachine {
 				return this.emit('task_error', {
 					task_id,
 					worker_id: this.id,
-					error: rest.error
+					...rest
 				});
 			}
 		});
@@ -197,8 +202,8 @@ class WorkerPool extends SimpleEventEmitter {
 	}
 
 	get #worker_config() {
-		const { max_idle_time } = this.config;
-		return { max_idle_time };
+		const { max_idle_time, stdout, stdin } = this.config;
+		return { max_idle_time, stdout, stdin };
 	}
 
 	get active_workers() {
