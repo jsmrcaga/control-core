@@ -342,7 +342,9 @@ describe('Graph', () => {
 				const node3 = new RunnableNode({ id: 3, config: { ret: 'Node 3' }});
 				const node4 = new RunnableNode({ id: 4, config: { ret: 'Node 4' }});
 				const node5 = new RunnableNode({ id: 5, config: { ret: 'Node 5' }});
+				const node6 = new RunnableNode({ id: 6, config: { ret: 'Node 6' }});
 
+				//  /-> 6 ->\
 				// 1 -> 2 -> 4 -> 5
 				//  \-> 3 ->/
 				const stub_1 = Sinon.stub(node1, 'run');
@@ -360,8 +362,11 @@ describe('Graph', () => {
 				const stub_5 = Sinon.stub(node5, 'run');
 				stub_5.callsFake(() => {});
 
+				const stub_6 = Sinon.stub(node6, 'run');
+				stub_6.callsFake(() => {});
+
 				const graph = Graph.build({
-					nodes: [node1, node2, node3, node4, node5],
+					nodes: [node1, node2, node3, node4, node5, node6],
 					edges: [{
 						from: 1,
 						to: 2
@@ -377,6 +382,12 @@ describe('Graph', () => {
 					}, {
 						from: 4,
 						to: 5
+					}, {
+						from: 1,
+						to: 6
+					}, {
+						from: 6,
+						to: 4
 					}]
 				});
 
@@ -384,12 +395,13 @@ describe('Graph', () => {
 					expect(node1.runs).to.be.eql(1);
 					expect(node2.runs).to.be.eql(1);
 					expect(node3.runs).to.be.eql(1);
-					expect(node4.runs).to.be.eql(2);
-					expect(node5.runs).to.be.eql(2);
+					expect(node4.runs).to.be.eql(3);
+					expect(node5.runs).to.be.eql(3);
+					expect(node6.runs).to.be.eql(1);
 
 					for(const node of [node4, node5]) {
 						expect(Array.isArray(output_stack[node.id])).to.be.true;
-						expect(output_stack[node.id].length).to.be.eql(2);
+						expect(output_stack[node.id].length).to.be.eql(3);
 					}
 
 					// test event listeners
