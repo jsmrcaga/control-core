@@ -63,7 +63,7 @@ describe('Control', () => {
 			const TestControl = new Control();
 			expect(() => {
 				TestControl.register(NotANode);
-			}).to.throw(TypeError, 'Only subclasses');
+			}).to.throw(Error, 'missing');
 		});
 
 		it('Throws because of existing node Type', () => {
