@@ -19,9 +19,9 @@ const NodeDiscovery = require('./lib/node-discovery');
 const { nodes_dir=[], plugins=[] } = workerData || {};
 
 const STATES = {
-	INIT: Symbol('INIT'),
-	BUSY: Symbol('BUSY'),
-	READY: Symbol('READY'),
+	INIT: Symbol.for('INIT'),
+	BUSY: Symbol.for('BUSY'),
+	READY: Symbol.for('READY'),
 };
 
 const MESSAGE_TYPES = {
