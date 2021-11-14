@@ -14,9 +14,8 @@ class Control {
 	}
 
 	#register_one(node_cls) {
-		if(!Node.isPrototypeOf(node_cls)) {
-			throw new TypeError(`Only subclasses of Node are allowed, trying to add ${node_cls.name}`);
-		}
+		// Check if class is node and raise if needed
+		Node.isNode(node_cls, true);
 
 		const { TYPE } = node_cls;
 		if(!TYPE) {

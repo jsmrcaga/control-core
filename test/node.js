@@ -25,6 +25,37 @@ describe('Node', () => {
 		})
 	});
 
+	describe('Prototype', () => {
+		it('Should recognize other nodes as not executable', () => {
+			const NotEither = 'plep';
+			class NotANode {};
+			class CloseNode {
+				run() {}
+				pre_run() {}
+				post_run() {}
+				execute() {}
+				pre_execute() {}
+			}
+
+			expect(() => Node.isNode(NotEither, true)).to.throw(TypeError);
+			expect(() => Node.isNode(NotANode, true)).to.throw(Error);
+			expect(() => Node.isNode(CloseNode, true)).to.throw(Error);
+		});
+
+		it('Should recognize other nodes as being executable', () => {
+			class Node2 {
+				run() {}
+				pre_run() {}
+				post_run() {}
+				execute() {}
+				pre_execute() {}
+				post_execute() {}
+			}
+
+			expect(Node.isNode(Node2)).to.be.true;
+		});
+	});
+
 	describe('Pre execution', () => {
 		it('Returns false and transitions to DID NOT RUN - Single value', () => {
 			const node = new TestNode({ id: 34 });
