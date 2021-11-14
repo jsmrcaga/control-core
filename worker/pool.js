@@ -6,11 +6,11 @@ const { Task, TASK_STATES } = require('./task');
 const { green, gray, red, cyan, underline } = require('chalk');
 
 const STATES = {
-	IDLE: Symbol('IDLE'),
-	BUSY: Symbol('BUSY'),
-	ERROR: Symbol('ERROR'),
-	EXITED: Symbol('EXITED'),
-	STARTING: Symbol('STARTING'),	
+	IDLE: Symbol.for('IDLE'),
+	BUSY: Symbol.for('BUSY'),
+	ERROR: Symbol.for('ERROR'),
+	EXITED: Symbol.for('EXITED'),
+	STARTING: Symbol.for('STARTING'),
 };
 
 class PooledWorker extends StateMachine {
