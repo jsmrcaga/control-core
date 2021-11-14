@@ -38,14 +38,13 @@ class NodeDiscovery {
 	static #read_plugin(plugin) {
 		// Read directory from plugin
 		const plugin_pkg = `${plugin}/package.json`;
-
 		const plugin_json = require(plugin_pkg);
 		const { control: { directory }} = plugin_json;
 
 		const plugin_path = require.resolve(plugin_pkg).replace('/package.json', '')
 		const plugin_nodes = path.join(plugin_path, directory);
 
-		return this.#read_dir(plugin_nodes).flat(2);
+		return this.#read_dir(plugin_nodes);
 	}
 
 	static #read_plugins(plugins=[]) {
