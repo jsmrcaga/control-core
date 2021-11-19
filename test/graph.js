@@ -414,5 +414,121 @@ describe('Graph', () => {
 				});
 			});
 		}
+
+		it('Changes config on nodes depending on initial and config', done => {
+			const node1 = new RunnableNode({ id: 1, config:
+				{
+					one: 'one',
+					prio: 'config',
+					ret: '${{ config.one }} ${{ initial_inputs.two }} ${{ any.prio }}'
+				}
+			});
+
+			const stub_1 = Sinon.stub(node1, 'run');
+			stub_1.callsFake(({ context, config }) => {
+				expect(config).to.not.be.undefined;
+				expect(config).to.not.be.null;
+				expect(config).to.have.property('ret');
+				expect(config.ret).to.be.eql('one two initial');
+
+				// Return to be able to test final output
+				return config.ret;
+			});
+
+			const graph = Graph.build({
+				nodes: [node1],
+				edges: []
+			});
+
+			graph.run({
+				inputs: {
+					two: 'two',
+					// inputs is prioritary over config
+					prio: 'initial'
+				}
+			}).then(({ final_outputs, output_stack, final_nodes }) => {
+				expect(final_outputs['1']).to.be.eql('one two initial');
+				done();
+			}).catch(e => {
+				done(e);
+			});
+		});
+
+		it('Changes config on nodes dynamically (depending on parents, grand-parents etc)', done => {
+			const node0 = new RunnableNode({ id: 'gp', config: {ret: 'lightsaber'} });
+
+			const node1 = new RunnableNode({ id: 1, config:
+				{
+					test: {
+						// note the use of "any" here
+						input: '${{ any.node_output }}',
+						grand_parent: '${{ outputs.gp }}',
+					}
+				}
+			});
+
+			const node2 = new RunnableNode({ id: 2, config:
+				{
+					ret: {
+						node_output: 'o2',
+						initial_input_override: 'iio',
+					}
+				}
+			});
+
+			const node3 = new RunnableNode({ id: 3, config:
+				{
+					ret: {
+						node_output: 'o3',
+					}
+				}
+			});
+
+			const stub_1 = Sinon.stub(node1, 'run');
+			stub_1.callsFake(({ parent_id, context, config, outputs }) => {
+				expect(config).to.not.be.undefined;
+				expect(config).to.not.be.null;
+
+				// When coming from parent 2
+				if(parent_id === 2) {
+					expect(config.test.input).to.be.eql('o2');
+				}
+
+				// When coming from parent 3
+				if(parent_id === 3) {
+					expect(config.test.input).to.be.eql('o3');
+				}
+
+				expect(config.test.grand_parent).to.be.eql('lightsaber');
+
+				if(!parent_id) {
+					throw new Error('No parent id');
+				}
+
+				// Return to be able to test final output
+				return config.test.input;
+			});
+
+			const graph = Graph.build({
+				nodes: [node0, node1, node2, node3],
+				edges: [
+					{ from: 'gp', to: 2 },
+					{ from: 'gp', to: 3 },
+					{ from: 2, to: 1 },
+					{ from: 3, to: 1 },
+				]
+			});
+
+			graph.run({
+				inputs: {
+					node_output: 'false positive'
+				}
+			}).then(({ final_outputs, output_stack, final_nodes }) => {
+				expect(final_outputs['1']).to.be.deep.eql(['o2', 'o3']);
+				done();
+			}).catch(e => {
+				done(e);
+			});
+		});
 	});
 });
