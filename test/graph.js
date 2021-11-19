@@ -530,5 +530,60 @@ describe('Graph', () => {
 				done(e);
 			});
 		});
+
+		it('Backpropagates an error on a given branch', done => {
+			// graph
+			/*
+								 / - 7
+						  - 2 - 4 - 5
+					- 1 -/  3 -/- - 6
+				0 / - - - -/- - - 8/
+			*/
+			const node0 = new RunnableNode({ id: 0, config: { ret: 0 }});
+			const node1 = new RunnableNode({ id: 1, config: { ret: 1 }});
+			const node2 = new RunnableNode({ id: 2, config: { ret: 2 }});
+			const node3 = new RunnableNode({ id: 3, config: { ret: 3 }});
+			const node4 = new RunnableNode({ id: 4, config: { ret: 4 }});
+			const node5 = new RunnableNode({ id: 5, config: { ret: 5 }});
+			const node6 = new RunnableNode({ id: 6, config: { ret: 6 }});
+			const node7 = new RunnableNode({ id: 7, config: { ret: 7 }});
+			const node8 = new RunnableNode({ id: 8, config: { ret: 8 }});
+
+			const stub_7 = Sinon.stub(node7, 'run');
+			stub_7.callsFake(({ parent_id, context, config, outputs }) => {
+				throw new Error('Test Error, dont worry');
+			});
+
+			const graph = Graph.build({
+				nodes: [node0, node1, node2, node3, node4, node5, node6, node7, node8],
+				edges: [
+					{ from: 0, to: 1 },
+					{ from: 0, to: 3 },
+					{ from: 0, to: 8 },
+					{ from: 1, to: 2 },
+					{ from: 2, to: 4 },
+					{ from: 4, to: 5 },
+					{ from: 4, to: 7 },
+					{ from: 3, to: 4 },
+					{ from: 3, to: 6 },
+				]
+			});
+
+			graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
+				done(new Error('Should have thrown'));
+			}).catch(e => {
+				// All these were a part of the backpropagation branch
+				for(const node of [node0, node1, node2, node3, node4]) {
+					expect(node.state).to.be.eql(STATES.BACKPROPAGATION_ERROR);
+				}
+
+				// Both other nodes finished
+				for(const node of [node5, node6, node8]) {
+					expect(node.state).to.be.eql(STATES.SUCCESS);
+				}
+
+				done();
+			});
+		});
 	});
 });
