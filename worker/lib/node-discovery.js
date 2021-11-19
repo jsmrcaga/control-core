@@ -36,6 +36,10 @@ class NodeDiscovery {
 	}
 
 	static #read_plugin(plugin) {
+		if(!plugin) {
+			return Promise.resolve([]);
+		}
+
 		// Read directory from plugin
 		const plugin_pkg = `${plugin}/package.json`;
 		const plugin_json = require(plugin_pkg);

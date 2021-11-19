@@ -76,8 +76,8 @@ class Control {
 		return this;
 	}
 
-	run() {
-		return this.graph.run();
+	run({ inputs={} }={}) {
+		return this.graph.run({ inputs });
 	}
 }
 
