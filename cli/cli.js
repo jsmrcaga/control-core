@@ -20,8 +20,9 @@ let { options, variables } = argumentate(process.argv.slice(2), {
 	r: 'respawn', // auto respawn dead threads
 	i: 'idle', // max time (in ms) before killing idle threads (incompatible with respawn)
 	p: 'plugins', // require Control Node plugins
-	k: 'fast-fail', // kill on worker error
+	f: 'fast-fail', // kill on worker error
 	x: 'title',  // show title (propagated to renderer)
+	k: 'key', // filter graphs by name
 	verbose: 'verbose', // should log verbose,
 	renderer: 'renderer' // change from default renderer
 });
@@ -47,7 +48,7 @@ Options:
     -t, --threads	Maximum number of threads
     -r, --respawn	If dead threads should automatically respawn
     -i, --idle		Maximum time a thread can be idle before killing it (incompatible with respawn)
-    -k, --fast-fail	Kill process (exit 1) if a worker error happens
+    -f, --fast-fail	Kill process (exit 1) if a worker error happens
     --verbose		Verbose logging
     --renderer		Path to a custom renderer
 	`);
@@ -79,6 +80,22 @@ options = {
 let graphs = require(path.join(process.cwd(), options.graphs));
 if(!Array.isArray(graphs)) {
 	graphs = [graphs];
+}
+
+// Filter graphs
+if(options.key) {
+	graphs = graphs.filter(graph => {
+		if(!graph.name) {
+			return false;
+		}
+
+		return new RegExp(options.key, 'gi').test(graph.name);
+	});
+
+	if(!graphs.length) {
+		console.log(`No graphs match "${options.key}"`);
+		return process.exit(1);
+	}
 }
 
 // Check if nodes is an array, otherwise transform it
