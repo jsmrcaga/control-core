@@ -585,5 +585,88 @@ describe('Graph', () => {
 				done();
 			});
 		});
+
+		it('Backpropagates an error on an async fail', done => {
+			// To simulate the async nature of our error
+			// and simplify the test
+			const clock = Sinon.useFakeTimers();
+
+			const node0 = new RunnableNode({ id: 0, config: { ret: 0 }});
+			const node1 = new RunnableNode({ id: 1, config: { ret: 1 }});
+
+			const stub_1 = Sinon.stub(node1, 'run');
+			stub_1.callsFake(({ parent_id, context, config, outputs, fail }) => {
+				// Simulate late fail
+				setTimeout(() => {
+					fail(new Error('Test async error'));
+				}, 100);
+			});
+
+			const graph = Graph.build({
+				nodes: [node0, node1],
+				edges: [
+					{ from: 0, to: 1 },
+				]
+			});
+
+			graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
+				// in this case the graph ends correctly
+				expect(node0.state).to.be.eql(STATES.SUCCESS);
+				expect(node1.state).to.be.eql(STATES.SUCCESS);
+
+				// Test that event emitter is triggered as well
+				graph.on('error', e => {
+					expect(e.message).to.include('Test async error');
+
+					expect(node0.state).to.be.eql(STATES.BACKPROPAGATION_ERROR);
+					expect(node1.state).to.be.eql(STATES.ERROR);
+
+					// restore clock
+					clock.restore();
+					done();
+				});
+
+				// and fails 100ms later
+				clock.tick(100);
+			}).catch(e => {
+				// clock.resotre() here because done(e) might end the process
+				clock.restore();
+				done(e);
+			});
+		});
+
+		it('Prevents async fail from being called twice', done => {
+			const node0 = new RunnableNode({ id: 0, config: { ret: 0 }});
+
+			let mocked_fail = null;
+
+			const stub_0 = Sinon.stub(node0, 'run');
+			stub_0.callsFake(({ parent_id, context, config, outputs, fail }) => {
+				// Simulate late fail allowing us the call it later
+				mocked_fail = () => {
+					fail(new Error('Test async error'));
+					fail(new Error('Second error'));
+				};
+			});
+
+			const graph = Graph.build({
+				nodes: [node0],
+				edges: []
+			});
+
+			graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
+				// in this case the graph ends correctly
+				expect(node0.state).to.be.eql(STATES.SUCCESS);
+
+				expect(() => mocked_fail()).to.throw(Error, 'Tried to call');
+
+				done();
+				// and fails 100ms later
+			}).catch(e => {
+				// clock.resotre() here because done(e) might end the process
+				clock.restore();
+				done(e);
+			});
+		});
 	});
 });
