@@ -3,7 +3,8 @@
 const { isMainThread, parentPort, workerData={} } = require('worker_threads');
 
 const Control = require('../control');
-const { StateMachine } = require('..//lib/mixins/mixins');
+const { StateMachine } = require('../lib/mixins/mixins');
+const { GraphError } = require('../errors/errors');
 const { Task, TASK_STATES } = require('./task');
 
 const NodeDiscovery = require('./lib/node-discovery');
@@ -170,11 +171,24 @@ class GraphWorker extends StateMachine {
 				graph_name: graph.name
 			});
 		}).catch(e => {
+			// Special handling of errors
+			// Sadly the structuredDataClone Algorithm can't keep up with
+			// custom errors
+			const extra_data = {};
+			if(e instanceof GraphError || e.errors?.length) {
+				// Remove NodeExec instance
+				extra_data.node_errors = e.errors.map(({ node_id, error }) => {
+					error.message = `Node: ${node_id} | ${error.message}`;
+					return error;
+				});
+			}
+
 			this.#message(TASK_STATES.ERROR, {
 				task_id,
 				graph_id: graph.id,
 				graph_name: graph.name,
-				error: e
+				error: e,
+				...extra_data
 			});
 		}).finally(() => {
 			// If more tasks are waiting
