@@ -589,18 +589,16 @@ describe('Graph', () => {
 		it('Backpropagates an error on an async fail', done => {
 			// To simulate the async nature of our error
 			// and simplify the test
-			const clock = Sinon.useFakeTimers();
-
 			const node0 = new RunnableNode({ id: 0, config: { ret: 0 }});
 			const node1 = new RunnableNode({ id: 1, config: { ret: 1 }});
 
-			const stub_1 = Sinon.stub(node1, 'run');
-			stub_1.callsFake(({ parent_id, context, config, outputs, fail }) => {
+			// Don't mock with sinon to keep the length attribute viable...
+			node1.run = ({ parent_id, context, config, outputs }, done) => {
 				// Simulate late fail
 				setTimeout(() => {
-					fail(new Error('Test async error'));
-				}, 100);
-			});
+					done(new Error('Test async error'));
+				}, 50);
+			};
 
 			const graph = Graph.build({
 				nodes: [node0, node1],
@@ -610,27 +608,12 @@ describe('Graph', () => {
 			});
 
 			graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
-				// in this case the graph ends correctly
-				expect(node0.state).to.be.eql(STATES.SUCCESS);
-				expect(node1.state).to.be.eql(STATES.SUCCESS);
+				// Once the graph ends backpropagation has taken place
+				expect(node0.state).to.be.eql(STATES.BACKPROPAGATION_ERROR);
+				expect(node1.state).to.be.eql(STATES.ERROR);
 
-				// Test that event emitter is triggered as well
-				graph.on('error', e => {
-					expect(e.message).to.include('Test async error');
-
-					expect(node0.state).to.be.eql(STATES.BACKPROPAGATION_ERROR);
-					expect(node1.state).to.be.eql(STATES.ERROR);
-
-					// restore clock
-					clock.restore();
-					done();
-				});
-
-				// and fails 100ms later
-				clock.tick(100);
+				done();
 			}).catch(e => {
-				// clock.resotre() here because done(e) might end the process
-				clock.restore();
 				done(e);
 			});
 		});
@@ -641,11 +624,11 @@ describe('Graph', () => {
 			let mocked_fail = null;
 
 			const stub_0 = Sinon.stub(node0, 'run');
-			stub_0.callsFake(({ parent_id, context, config, outputs, fail }) => {
+			stub_0.callsFake(({ parent_id, context, config, outputs }, done) => {
 				// Simulate late fail allowing us the call it later
 				mocked_fail = () => {
-					fail(new Error('Test async error'));
-					fail(new Error('Second error'));
+					done(new Error('Test async error'));
+					done(new Error('Second error'));
 				};
 			});
 
