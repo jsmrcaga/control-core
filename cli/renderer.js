@@ -64,8 +64,12 @@ class Renderer {
 			this.log(tasks[task_id].graph_config.name, green('DONE'), gray(`on worker ${worker_id}`));
 		});
 
-		worker_pool.on('task_error', ({ task_id, worker_id, error }) => {
+		worker_pool.on('task_error', ({ task_id, worker_id, error, node_errors }) => {
 			const { name } = tasks[task_id].graph_config;
+			if(node_errors) {
+				error.node_errors = node_errors;
+			}
+
 			this.log(name, red('ERROR'), gray(`on worker ${worker_id}`));
 			this.errors[name] = error;
 		});
@@ -95,8 +99,15 @@ class Renderer {
 		this.log('\n============', red('ERRORS'), '============');
 		for(const [graph, err] of Object.entries(this.errors)) {
 			this.log(gray(underline('Graph:')), bold(graph));
-			this.log(err);
-			this.log('----------');
+			if(err.node_errors?.length) {
+				for(const node_error of err.node_errors) {
+					this.log('\n');
+					this.log(node_error);
+				}
+			} else {
+				this.log(err);
+			}
+			this.log('--------------------------------');
 		}
 	}
 }
