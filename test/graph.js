@@ -608,13 +608,14 @@ describe('Graph', () => {
 			});
 
 			graph.run().then(({ final_outputs, output_stack, final_nodes }) => {
+				done(new Error('Should have thrown'));
+			}).catch(e => {
+				expect(e.errors).to.have.length(1);
+				expect(e.errors[0].node_id).to.be.eql(1);
 				// Once the graph ends backpropagation has taken place
 				expect(node0.state).to.be.eql(STATES.BACKPROPAGATION_ERROR);
 				expect(node1.state).to.be.eql(STATES.ERROR);
-
 				done();
-			}).catch(e => {
-				done(e);
 			});
 		});
 
