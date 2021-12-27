@@ -1,5 +1,5 @@
 {
-  "name": "control-core",
+  "name": "@control/core",
   "version": "0.0.0",
   "description": "A flow based automation tool",
   "main": "index.js",
@@ -8,6 +8,9 @@
   },
   "bin": {
     "control": "./cli/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "author": "Jo Colina <jo@jocolina.com>",
   "license": "MIT",
