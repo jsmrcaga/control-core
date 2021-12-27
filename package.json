@@ -9,6 +9,9 @@
   "bin": {
     "control": "./cli/cli.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Jo Colina <jo@jocolina.com>",
   "license": "MIT",
   "devDependencies": {
