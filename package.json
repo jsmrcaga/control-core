@@ -1,5 +1,5 @@
 {
-  "name": "control-core",
+  "name": "@control/core",
   "version": "0.0.0",
   "description": "A flow based automation tool",
   "main": "index.js",
